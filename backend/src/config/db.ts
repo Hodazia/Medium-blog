@@ -2,7 +2,9 @@
 
 // connect to a MONGODB STRING
 
+import { Schema } from "mongoose";
 import mongoose from "mongoose"
+
 
 export const db = async () => {
     try{
@@ -14,3 +16,10 @@ export const db = async () => {
     }
 }
 
+const userschema = new Schema({
+    name: {type:String, required:true},
+    email: {type:String, required:true},
+    password: {type:String,required:true}
+})
+
+export const usermodel =  mongoose.model("users",userschema);
