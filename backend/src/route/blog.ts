@@ -4,18 +4,20 @@ import { Express } from 'express';
 import { createBlogInput,updateBlogInput } from '../config/validation';
 import { blogmodel } from '../config/db';
 import { authMiddleware } from '../config/middleware';
+import { usermodel } from '../config/db';
 
 //@ts-ignore
 const JWT_SECRET : string = process.env.JWT_SECRET;
 const router = express.Router();
 
-
-router.post("/", authMiddleware, async (req:Request,res:Response) => {
+// CORRECT
+router.post("/create", authMiddleware, async (req:Request,res:Response) => {
     // create a blog router,
     //@ts-ignore
     const userID = req.userId; // it contains the USERID of the user
     // send the title, content, get the id from req.userId,
 
+    console.log("User id ," ,userID);
     const {success,error} = createBlogInput.safeParse(req.body);
     if(!success)
     {
@@ -26,10 +28,14 @@ router.post("/", authMiddleware, async (req:Request,res:Response) => {
 
     try {
         // Check if user already exists
+
+        // the published Date is automatically handled as Date.now as default
+        // publishedDate: Date.now(); //for every create POST request
         const blog = await blogmodel.create({
             title:req.body.title,
             content:req.body.content,
-            authorId:userID
+            author:userID,
+            tags:req.body.tags  // an array of strings,
         })
 
         return res.status(201).json({
@@ -39,6 +45,7 @@ router.post("/", authMiddleware, async (req:Request,res:Response) => {
     }
     catch(e)
     {
+        console.error("Error creating blog post:", e); 
         return res.status(500).json({
             "message":"Error sending the posts"
         })
@@ -46,8 +53,11 @@ router.post("/", authMiddleware, async (req:Request,res:Response) => {
 
 })
 
-
-router.put('/:id', authMiddleware, async(req:Request, res:Response)=>{
+/*
+update the content only, not the tags,
+*/
+//CORRECT
+router.put('/update/:id', authMiddleware, async(req:Request, res:Response)=>{
 	const id = req.params.id;   // the userid 
 	const body = req.body;
 	const {success}= updateBlogInput.safeParse(body);
@@ -82,29 +92,35 @@ router.put('/:id', authMiddleware, async(req:Request, res:Response)=>{
     }
 })
 
+// here u can have two options
+/*
+either fetch all blogs from the DB, 
+*/
 
-router.get('/bulk', async(req:Request, res:Response)=>{
-	
-	try {
-		const blogs = await blogmodel.find({}, {
-            content: 1,
-            title: 1,
-            authorId: 1
-        }).populate('author', 'name'); 
-        // Populates the author field with just the 'name'
-		return res.json({
-			blogs
-		})
+//CORRECT ROUTE
+router.get('/bulk', authMiddleware,  async(req:Request, res:Response)=>{
+	// @ts-ignore
+    const userID = req.userId;
+    try {
+        const blogs = await blogmodel.find({})
+            .populate('author', 'name') // Use Mongoose populate for efficiency
+            .select('title content publishedDate tags author'); // Select all necessary fields
 
-	} catch (error) {
-		 return res.status(411).json({
-			msg: "error while getting all posts"
-		})
-	}
+        return res.json({
+            blogs
+        });
+
+    } catch (error) {
+        console.error("Error fetching all blog posts:", error);
+        return res.status(411).json({
+            msg: "Error while getting all posts"
+        });
+    }
 	
 })
 
-router.get('/:id', async(req:Request, res:Response)=>{
+
+router.get('/get/:id', async(req:Request, res:Response)=>{
 	const id = req.params.id;
 	try {
 		const post = await blogmodel.findById(id).populate('author', 'name');

@@ -12,11 +12,13 @@ export const authMiddleware = (req:Request, res:Response, next:NextFunction) => 
     const token = authHeader.split(' ')[1];
 
     try {
-        //@ts-ignore
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        
+        const decoded = jwt.verify(token, process.env.JWT_SECRET as string);
 
+        console.log("DECODED IS ", decoded);
+        // decoded id shall be taken as req.userId,
         //@ts-ignore
-        req.userId = decoded.userId;
+        req.userId = decoded.id;
 
         next();
     } catch (err) {

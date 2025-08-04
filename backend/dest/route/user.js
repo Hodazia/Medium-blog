@@ -23,48 +23,44 @@ const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const JWT_SECRET = process.env.JWT_SECRET;
 router.post("/signup", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     // signup router, we need a zod validation for this
-    const { email, password, name } = req.body;
-    const { success } = validation_1.signupInput.safeParse({
-        email,
-        password,
-        name
-    });
-    //let user = await usermodel.findOne({email:email});
-    if (!success) {
-        return res.status(400).json({
-            "message": "Enter the correct credentials "
-        });
-    }
     try {
-        // Check if user already exists
-        const existingUser = yield db_1.usermodel.findOne({ email: email });
-        if (existingUser) {
-            return res.status(409).json({
-                message: "A user with this email already exists."
+        const { email, password, name } = req.body;
+        const { success } = validation_1.signupInput.safeParse({
+            email,
+            password,
+            name
+        });
+        //let user = await usermodel.findOne({email:email});
+        if (!success) {
+            return res.status(400).json({
+                "message": "Enter the correct credentials "
             });
         }
-        // --- Hash Password ---
+        // check for an exisitng user
+        const existinguser = yield db_1.usermodel.findOne({ email: email });
+        if (existinguser) {
+            return res.status(409).json({
+                "message": "user already exists, enter new/unique credentials"
+            });
+        }
+        //hash the password
         const hashedPassword = yield bcryptjs_1.default.hash(password, 10);
-        // Create new user in the database
-        const newUser = yield db_1.usermodel.create({
-            name: name,
-            email: email,
-            password: hashedPassword
+        const newuser = yield db_1.usermodel.create({
+            name,
+            email,
+            password: hashedPassword,
         });
-        const token = jsonwebtoken_1.default.sign({ id: newUser._id }, // Payload
-        JWT_SECRET, // Secret
-        { expiresIn: '1h' } // Options
-        );
+        console.log('User saved to DB:', newuser);
+        const token = jsonwebtoken_1.default.sign({ id: newuser._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
         return res.status(200).json({
             message: "User registered successfully.",
             token: token
         });
     }
-    catch (dbError) {
-        // Catch any database or unexpected errors
-        console.error("Error during signup:", dbError);
+    catch (error) {
+        console.log("Error signing in ", error);
         return res.status(500).json({
-            message: "An internal server error occurred during registration. Please try again."
+            "message": "Internal server error"
         });
     }
 }));
@@ -85,7 +81,7 @@ router.post("/signin", (req, res) => __awaiter(void 0, void 0, void 0, function*
     try {
         // Check for the user in the DB
         // Ensure your usermodel query can find the password field if it's 'select: false'
-        const user = yield db_1.usermodel.findOne({ email: email }).select('+password'); // Add .select('+password') if it's excluded by default
+        const user = yield db_1.usermodel.findOne({ email: email });
         if (!user) {
             // Use 401 Unauthorized for invalid credentials (generic message for security)
             return res.status(401).json({
@@ -94,7 +90,7 @@ router.post("/signin", (req, res) => __awaiter(void 0, void 0, void 0, function*
         }
         const isPasswordMatched = yield bcryptjs_1.default.compare(password, user.password);
         if (isPasswordMatched) {
-            const token = jsonwebtoken_1.default.sign({ id: user._id }, JWT_SECRET, { expiresIn: '1h' });
+            const token = jsonwebtoken_1.default.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
             // 200 OK for successful login
             return res.status(200).json({
                 message: "Logged in successfully.",

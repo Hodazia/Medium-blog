@@ -4,7 +4,7 @@
 
 import { Mongoose, Schema } from "mongoose";
 import mongoose from "mongoose"
-
+import { boolean } from "zod";
 
 
 export const db = async () => {
@@ -24,9 +24,28 @@ const userschema = new Schema({
 })
 
 const blogSchema = new Schema({
-    authorId: {type:String, required:true},
-    title:{type:String, required:true},
-    content:{type:String,required:true}
+    title: {
+        type: String,
+        required: true,
+    },
+    content: {
+        type: String,
+        required: true,
+    },
+    author: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'users',
+        required: true,
+    },
+    publishedDate: {
+        type: Date,
+        default: Date.now,
+    },
+    // The new tags field is added here as an array of strings
+    tags: {
+        type: [String],
+        default: [],
+    },
 })
 
 export const blogmodel = mongoose.model("blogs",blogSchema);

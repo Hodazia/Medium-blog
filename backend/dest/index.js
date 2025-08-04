@@ -12,6 +12,7 @@ const express_1 = __importDefault(require("express"));
 const db_1 = require("./config/db");
 const dotenv_1 = __importDefault(require("dotenv"));
 const user_1 = __importDefault(require("./route/user"));
+const blog_1 = __importDefault(require("./route/blog"));
 const cors_1 = __importDefault(require("cors"));
 dotenv_1.default.config(); // let' the .env files be fetched
 const app = (0, express_1.default)();
@@ -24,7 +25,8 @@ app.get("/", (req, res) => {
 });
 // connecting to the DB and schema/model defining
 (0, db_1.db)();
-app.use("/api/v1", user_1.default);
+app.use("/api/v1/user", user_1.default);
+app.use("/api/v1/blog", blog_1.default);
 app.listen(3000, () => {
     console.log("greetings we are listening to u, at port 3000");
 });

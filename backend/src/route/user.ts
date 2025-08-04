@@ -15,7 +15,9 @@ const JWT_SECRET : string = process.env.JWT_SECRET;
 
 router.post("/signup", async (req : Request,res: Response) => {
     // signup router, we need a zod validation for this
-    const {email,password,name} = req.body;
+
+    try {
+        const {email,password,name} = req.body;
 
     const {success} = signupInput.safeParse({
         email,
@@ -25,54 +27,50 @@ router.post("/signup", async (req : Request,res: Response) => {
 
     //let user = await usermodel.findOne({email:email});
 
-
     if(!success)
     {
         return res.status(400).json({
             "message":"Enter the correct credentials "
         })
     }
-    try {
-        // Check if user already exists
-        const existingUser = await usermodel.findOne({ email: email });
 
-        if (existingUser) {
-            
-            return res.status(409).json({
-                message: "A user with this email already exists."
-            });
+    // check for an exisitng user
+    const existinguser = await usermodel.findOne({email:email});
+    if(existinguser)
+    {
+        return res.status(409).json({
+            "message":"user already exists, enter new/unique credentials"
         }
+        )
+    }
 
-        // --- Hash Password ---
+    //hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-        const hashedPassword = await bcrypt.hash(password, 10); 
+    const newuser = await usermodel.create({
+      name,
+      email,
+      password:hashedPassword,
+    });
 
-        // Create new user in the database
-        const newUser = await usermodel.create({
-            name: name,
-            email: email,
-            password: hashedPassword
-        });
+    console.log('User saved to DB:', newuser);
+    const token = jwt.sign({ id: newuser._id },
+       process.env.JWT_SECRET as string, 
+       { expiresIn: '1h' });
 
+               
+       return res.status(200).json({
+        message: "User registered successfully.",
+        token: token
+    });
 
-        const token = jwt.sign(
-            { id: newUser._id }, // Payload
-            JWT_SECRET,          // Secret
-            { expiresIn: '1h' }  // Options
-        );
-
-        
-        return res.status(200).json({
-            message: "User registered successfully.",
-            token: token
-        });
-
-    } catch (dbError) {
-        // Catch any database or unexpected errors
-        console.error("Error during signup:", dbError);
+    }
+    catch(error)
+    {
+        console.log("Error signing in ",error);
         return res.status(500).json({
-            message: "An internal server error occurred during registration. Please try again."
-        });
+            "message":"Internal server error"
+        })
     }
 
 })
@@ -97,7 +95,7 @@ router.post("/signin", async (req:Request,res:Response) => {
     try {
         // Check for the user in the DB
         // Ensure your usermodel query can find the password field if it's 'select: false'
-        const user = await usermodel.findOne({ email: email }).select('+password'); // Add .select('+password') if it's excluded by default
+        const user = await usermodel.findOne({ email: email })
 
         if (!user) {
             // Use 401 Unauthorized for invalid credentials (generic message for security)
@@ -113,7 +111,7 @@ router.post("/signin", async (req:Request,res:Response) => {
             
             const token = jwt.sign(
                 { id: user._id }, 
-                JWT_SECRET,
+                process.env.JWT_SECRET as string, 
                 { expiresIn: '1h' }
             );
 

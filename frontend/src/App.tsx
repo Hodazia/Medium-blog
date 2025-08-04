@@ -5,15 +5,24 @@ import './App.css'
 import { Auth } from './components/Auth'
 import { BrowserRouter,Routes,Route } from 'react-router-dom'
 import { Page1 } from './pages/page1'
+import { SignUp } from './pages/SignUp'
+import { SignIn } from './pages/SignIn'
+import { Blogs } from './pages/Blogs'
+import { Blog } from './pages/Blog'
+
 function App() {
   
 
   return (
     <>
-    <div className='bg-blue-500 border border-yellow-100 rounded-md'>ey there</div>
     <BrowserRouter>
     <Routes>
-      <Route path='/' element={<Page1 />}/>
+      <Route path='/' element={<SignUp/>}/>
+      <Route path="/signup" element={<SignUp />} />
+      <Route path="/signin" element={<SignIn />} />
+      <Route path="/blog/:id" element={<Blog />} />
+      <Route path="/blogs" element={<Blogs />} />
+      <Route />
     </Routes>
     </BrowserRouter>
     </>
