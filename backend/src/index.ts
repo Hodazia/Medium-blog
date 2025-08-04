@@ -9,6 +9,7 @@ import { Request, Response } from "express";
 import { db } from "./config/db";
 import dotenv from 'dotenv'
 import userrouter from "./route/user"
+import blogrouter from "./route/blog"
 import cors from "cors";
 dotenv.config(); // let' the .env files be fetched
 
@@ -25,7 +26,8 @@ app.get("/",(req:Request,res:Response) => {
 
 // connecting to the DB and schema/model defining
 db();
-app.use("/api/v1",userrouter);
+app.use("/api/v1/user",userrouter);
+app.use("/api/v1/blog",blogrouter);
 app.listen(3000, () => {
     console.log("greetings we are listening to u, at port 3000");
 })
