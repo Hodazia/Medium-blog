@@ -34,10 +34,12 @@ router.post("/create", authMiddleware, async (req:Request,res:Response) => {
         const blog = await blogmodel.create({
             title:req.body.title,
             content:req.body.content,
+            description:req.body.description, // added the description a short one
             author:userID,
             tags:req.body.tags  // an array of strings,
         })
 
+        // what is blog.id ?  it will be the id of the blogs
         return res.status(201).json({
             id: blog.id
         });
@@ -104,7 +106,7 @@ router.get('/bulk', authMiddleware,  async(req:Request, res:Response)=>{
     try {
         const blogs = await blogmodel.find({})
             .populate('author', 'name') // Use Mongoose populate for efficiency
-            .select('title content publishedDate tags author'); // Select all necessary fields
+            .select('title content description publishedDate tags author'); // Select all necessary fields
 
         return res.json({
             blogs
@@ -119,7 +121,28 @@ router.get('/bulk', authMiddleware,  async(req:Request, res:Response)=>{
 	
 })
 
+/*
+RESPONSE FOR THE BELOWE API
+{
+    "post": {
+        "_id": "6891ca279e9c9ac784cea3ca",
+        "title": "FOOTBALL UCL",
+        "content": "<p>so Real madrid are champions once again as they usually are!</p>",
+        "description": "REAL MADRID HALA MADRID",
+        "author": {
+            "_id": "6891aeecb59c03f3d9a27c54",
+            "name": "JOHN CENA"
+        },
+        "tags": [
+            "FOOTBALL",
+            "SPORTS"
+        ],
+        "publishedDate": "2025-08-05T09:08:55.815Z",
+        "__v": 0
+    }
+}
 
+*/
 router.get('/get/:id', async(req:Request, res:Response)=>{
 	const id = req.params.id;
 	try {

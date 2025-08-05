@@ -1,10 +1,12 @@
 import { Link } from "react-router-dom";
+import DOMPurify from 'dompurify';
 
+// in the BogCard, i will display id, authorName, title, publishedDate, tags and description
 interface BlogCardProps{
     id:            string;  //Blogid not user-id
     authorName:    string;
     title:         string;
-    content:       string;
+    description:       string;  // not just a string, but a HTML string with <></>
     publishedDate: string;
     onclick?:      ()=>void; 
     tags: string[]    
@@ -16,18 +18,23 @@ directed to a url like blog/:id for the full blog data,
 
 
 the props will passed from the parent which will fetch data from tHE api
+
+in the blogCard no props like content is passed, 
 */
 export const BlogCard = ({
     id,
     authorName,
     title,
-    content,
+    description,
     publishedDate,
-    tags
+    tags,
+    onclick
 }: BlogCardProps) => {
 
     const formattedDate = new Date(publishedDate).toISOString().split('T')[0];
 
+    // // Sanitize the HTML content before rendering
+    // const sanitizedContent = DOMPurify.sanitize(content);
   return (
     <Link to={`/blog/${id}`} >
         <div className="p-4 border-b-2 border-slate-200 cursor-pointer">
@@ -48,9 +55,11 @@ export const BlogCard = ({
             <div className="text-xl font-semibold pt-2">
                 {title}
             </div>
-            <div className="font-thin text-md ">
-                {content.slice(0,100)+ "..."}
-            </div>
+            <div 
+                    className="font-thin text-md"
+                >
+                    {description}
+                    </div>
             {tags && tags.length > 0 && (
                 <div className="mt-2 flex flex-wrap gap-2">
                     {tags.map(tag => (
@@ -62,7 +71,7 @@ export const BlogCard = ({
                 </div>
             )}
             <div className="text-slate-400 text-sm font-thin pt-4">
-                {`${Math.ceil(content.length/100)} minute(s) read`}
+                {`${Math.floor(Math.random()*10)} minute(s) read`}
             </div>
         </div>
     </Link>

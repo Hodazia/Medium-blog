@@ -39,9 +39,11 @@ router.post("/create", middleware_1.authMiddleware, (req, res) => __awaiter(void
         const blog = yield db_1.blogmodel.create({
             title: req.body.title,
             content: req.body.content,
+            description: req.body.description, // added the description a short one
             author: userID,
             tags: req.body.tags // an array of strings,
         });
+        // what is blog.id
         return res.status(201).json({
             id: blog.id
         });
@@ -99,7 +101,7 @@ router.get('/bulk', middleware_1.authMiddleware, (req, res) => __awaiter(void 0,
     try {
         const blogs = yield db_1.blogmodel.find({})
             .populate('author', 'name') // Use Mongoose populate for efficiency
-            .select('title content publishedDate tags author'); // Select all necessary fields
+            .select('title content description publishedDate tags author'); // Select all necessary fields
         return res.json({
             blogs
         });

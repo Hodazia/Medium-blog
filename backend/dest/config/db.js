@@ -40,6 +40,11 @@ const blogSchema = new mongoose_1.Schema({
         type: String,
         required: true,
     },
+    // added the description which will be displayed on the BLOGCARD
+    description: {
+        type: String,
+        required: true
+    },
     author: {
         type: mongoose_2.default.Schema.Types.ObjectId,
         ref: 'users',

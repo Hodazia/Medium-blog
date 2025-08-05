@@ -9,6 +9,8 @@ import { SignUp } from './pages/SignUp'
 import { SignIn } from './pages/SignIn'
 import { Blogs } from './pages/Blogs'
 import { Blog } from './pages/Blog'
+import { BlogEditor } from './pages/CreateBlog'
+import { BlogDetails } from './pages/BlogDetails'
 
 function App() {
   
@@ -20,7 +22,10 @@ function App() {
       <Route path='/' element={<SignUp/>}/>
       <Route path="/signup" element={<SignUp />} />
       <Route path="/signin" element={<SignIn />} />
-      <Route path="/blog/:id" element={<Blog />} />
+      {/* a blog fetched and displayed by their user id */}
+      <Route path="/blog/:id" element={<BlogDetails />} />
+      {/* create a new blog  */}
+      <Route path='/blog/create' element={<BlogEditor/>}/>
       <Route path="/blogs" element={<Blogs />} />
       <Route />
     </Routes>

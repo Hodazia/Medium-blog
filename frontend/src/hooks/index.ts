@@ -4,13 +4,14 @@ import { BACKEND_URL } from "../config/utils";
 
 // id? Blogid or authorid?
 export interface Blog{
-    "content": string,
+    "description": string,
     "title":   string,
     "id":      string,
     "publishedDate":string,
     "author": {
     "name":   string
     },
+    "content":string,
     "tags":string[]
 }
 
@@ -58,13 +59,35 @@ response.data.blogs = [
         {
             "id": "68910495639f2b414da24f07",
             "title": "songs about now",
-            "content": "dilbar\ncoldplay",
+            "description": "COLDplay",
+            content:"ksdfbvndb kdlfn"
             "author": {
-                "name": "John DOE 2002"
-            }
+                "name": "John DOE 2002",
+                "id":""
+                            },
+            publishedDate:{},
+            tags:["st","svd"]
         }
     ]
-
+{
+    "blogs": [
+        {
+            "_id": "6891c85a9e9c9ac784cea3c1",
+            "title": "INDIA WON THE LAST MATCH",
+            "content": "<p>I am all well </p>",
+            "description": "Cricket as u know is it",
+            "author": {
+                "_id": "6891aeecb59c03f3d9a27c54",
+                "name": "JOHN CENA"
+            },
+            "tags": [
+                "CRICKET",
+                "SPORTS"
+            ],
+            "publishedDate": "2025-08-05T09:01:14.633Z"
+        }
+    ]
+}
 */
 export const useBlogs = () => {
     const [loading, setLoading]= useState(true);
