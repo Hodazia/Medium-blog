@@ -1,26 +1,16 @@
 import { Link } from "react-router-dom";
-import DOMPurify from 'dompurify';
+import { MessageCircle, Heart, User, Sparkle } from "lucide-react";
+import parse from "html-react-parser"
 
-// in the BogCard, i will display id, authorName, title, publishedDate, tags and description
-interface BlogCardProps{
-    id:            string;  //Blogid not user-id
-    authorName:    string;
-    title:         string;
-    description:       string;  // not just a string, but a HTML string with <></>
+interface BlogCardProps {
+    id: string;
+    authorName: string;
+    title: string;
+    description: string;
     publishedDate: string;
-    onclick?:      ()=>void; 
-    tags: string[]    
+    tags: string[];
 }
 
-/*
-the blogcard will contain only a small card, on clicking u will
-directed to a url like blog/:id for the full blog data,
-
-
-the props will passed from the parent which will fetch data from tHE api
-
-in the blogCard no props like content is passed, 
-*/
 export const BlogCard = ({
     id,
     authorName,
@@ -28,60 +18,78 @@ export const BlogCard = ({
     description,
     publishedDate,
     tags,
-    onclick
 }: BlogCardProps) => {
+    // Helper function to format the date string
+    const formatDate = (dateString: string) => {
+        const options: Intl.DateTimeFormatOptions = { 
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric' 
+        };
+        return new Date(dateString).toLocaleDateString('en-US', options);
+    };
 
-    const formattedDate = new Date(publishedDate).toISOString().split('T')[0];
-
-    // // Sanitize the HTML content before rendering
-    // const sanitizedContent = DOMPurify.sanitize(content);
-  return (
-    <Link to={`/blog/${id}`} >
-        <div className="p-4 border-b-2 border-slate-200 cursor-pointer">
-            <div className="flex">
-                <div className="flex justify-center flex-col">
-                    <Avatar size="small" name={authorName}/>
-                </div>
-                <div className="font-extralight pl-2 text-sm flex justify-center flex-col">
-                    {authorName} 
-                </div>
-                <div className="flex flex-col justify-center p-2">
-                    <Circle/>
-                </div>
-                <div className=" font-thin text-slate-500 text-sm flex justify-center flex-col">
-                    {formattedDate}
-                </div>
-            </div>
-            <div className="text-xl font-semibold pt-2">
-                {title}
-            </div>
-            <div 
-                    className="font-thin text-md"
-                >
-                    {description}
+    return (
+        // Ensure the Link takes full height and width of its grid cell
+        // The w-full h-full here ensures it fills the grid cell, then the inner div sets the fixed size
+        <Link to={`/blog/${id}`} className="block w-full h-full flex justify-center"> {/* Added flex justify-center for centering in grid */}
+            <div className="relative rounded-3xl shadow-lg 
+                            transition-all duration-300 hover:shadow-2xl hover:scale-[1.02] 
+                            bg-white border border-gray-200 
+                            w-80 h-[420px] overflow-hidden flex flex-col"> {/* Fixed width and height, overflow hidden */}
+                
+                {/* Header Section (1% Better) */}
+                <div className="bg-[#2a2d48] text-white p-4 sm:p-6 flex-shrink-0">
+                    <div className="flex items-center gap-2 mb-1">
+                        <Sparkle size={20} className="text-[#a5b4fc]" />
+                        <h3 className="text-xl font-bold">1% Better</h3>
                     </div>
-            {tags && tags.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-2">
-                    {tags.map(tag => (
-                        <span key={tag} className="bg-blue-100 text-blue-800 
-                        text-xs font-medium px-2.5 py-0.5 rounded-full">
-                            {tag}
-                        </span>
-                    ))}
+                    <p className="text-sm text-gray-300 leading-tight">
+                        Weekly content on how to improve little by little every single day
+                    </p>
                 </div>
-            )}
-            <div className="text-slate-400 text-sm font-thin pt-4">
-                {`${Math.floor(Math.random()*10)} minute(s) read`}
-            </div>
-        </div>
-    </Link>
-  )
-}
 
-export function Circle(){
-    return <div className="h-1 w-1 rounded-full bg-slate-500">
-    </div>
-}
+                {/* Main Content Section - flex-grow to take available space */}
+                <div className="p-4 sm:p-6 space-y-4 flex-grow flex flex-col overflow-hidden"> {/* Added overflow-hidden here too */}
+                    {/* Top Row: Date and Icons */}
+                    <div className="flex justify-between items-center text-sm text-gray-500 mb-2 flex-shrink-0">
+                        <span>{formatDate(publishedDate)}</span>
+                        <div className="flex items-center gap-3">
+                            <MessageCircle size={18} className="hover:text-indigo-500 transition-colors cursor-pointer" />
+                            <Heart size={18} className="hover:text-red-500 transition-colors cursor-pointer" />
+                        </div>
+                    </div>
+
+                    {/* Blog Title - Truncate to 2 lines */}
+                    <h2 className="text-2xl font-bold text-gray-900 leading-snug line-clamp-2 flex-shrink-0">
+                        {title}
+                    </h2>
+
+                    {/* Blog Description - Truncate to 3 lines */}
+                    {/* The line-clamp will truncate text, and overflow-hidden on parent will clip images/excess */}
+                    <p className="text-gray-600 line-clamp-3 flex-grow">
+                        {parse(description)}
+                    </p>
+
+                    {/* Footer Section: Author and Tags/Badges */}
+                    <div className="flex justify-between items-center pt-4 border-t border-gray-100 flex-shrink-0 mt-auto">
+                        {/* Author Info */}
+                        <div className="flex items-center gap-3">
+                            <div className="bg-indigo-100 rounded-full w-8 h-8 flex items-center justify-center">
+                                <User size={18} className="text-indigo-600" />
+                            </div>
+                            <span className="text-sm font-medium text-gray-700">
+                                {authorName}
+                            </span>
+                        </div>
+
+
+                    </div>
+                </div>
+            </div>
+        </Link>
+    );
+};
 
 export function Avatar({name, size="small"}: {name:string, size?:"small"| "big"}){
     return  <div className={`relative inline-flex items-center justify-center ${size==="small"? "w-6 h-6":"w-10 h-10"} overflow-hidden bg-gray-600 rounded-full`}>

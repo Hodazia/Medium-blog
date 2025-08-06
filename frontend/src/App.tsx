@@ -11,6 +11,7 @@ import { Blogs } from './pages/Blogs'
 import { Blog } from './pages/Blog'
 import { BlogEditor } from './pages/CreateBlog'
 import { BlogDetails } from './pages/BlogDetails'
+import { Profile } from './pages/Profile'
 
 function App() {
   
@@ -26,7 +27,10 @@ function App() {
       <Route path="/blog/:id" element={<BlogDetails />} />
       {/* create a new blog  */}
       <Route path='/blog/create' element={<BlogEditor/>}/>
-      <Route path="/blogs" element={<Blogs />} />
+      {/* for the home , all the blogs will be fetched okay */}
+      <Route path='/blogs' element={<Blogs />}/>
+      {/*user specific blogs, */}
+      <Route path="/profile/:userId" element={<Profile />} /> 
       <Route />
     </Routes>
     </BrowserRouter>

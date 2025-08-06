@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import axios from "axios";
 import { BACKEND_URL } from "../config/utils";
+import { useNavigate } from "react-router-dom";
 
 // id? Blogid or authorid?
 export interface Blog{
@@ -89,23 +90,32 @@ response.data.blogs = [
     ]
 }
 */
-export const useBlogs = () => {
+export const useBlogs = (page:number) => {
     const [loading, setLoading]= useState(true);
     const [blogs, setBlogs]= useState<Blog[]>([]);
     // array of Blog objects 
+    const [totalBlogs, setTotalBlogs] = useState(0);
+    const [error, setError] = useState<string | null>(null);
+    const navigate = useNavigate()
+
+    const BLOGS_PER_PAGE = 10;
 
     const fetchBlogs = async () => {
         setLoading(true);
         try {
-            const response = await axios.get(`${BACKEND_URL}/api/v1/blog/bulk`, {
+            const response = await axios.get(`${BACKEND_URL}/api/v1/blog/bulk?page=${page}&limit=${BLOGS_PER_PAGE}`, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("token")}`
                 }
             });
-            setBlogs(response.data.blogs);
+
+            setBlogs(response.data.posts);
+            setTotalBlogs(response.data.totalPosts);
+            setLoading(false);
         } catch (e) {
             console.error("Failed to fetch blogs:", e);
             // Handle error, e.g., show a toast notification
+            navigate('/signin');
         } finally {
             setLoading(false);
         }
@@ -113,11 +123,12 @@ export const useBlogs = () => {
 
     useEffect(() => {
         fetchBlogs();
-    },    [])
+    },    [page])
 
     return {
         loading,
         blogs,
-        fetchBlogs
+        fetchBlogs,
+        totalBlogs, error,BLOGS_PER_PAGE
     }
 }

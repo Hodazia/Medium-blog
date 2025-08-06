@@ -1,4 +1,7 @@
-import { useParams } from "react-router-dom";
+/*
+get blogs of the user who is currently signed in
+
+*/import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { Appbar } from "../components/Appbar";

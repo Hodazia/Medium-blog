@@ -43,7 +43,7 @@ router.post("/create", middleware_1.authMiddleware, (req, res) => __awaiter(void
             author: userID,
             tags: req.body.tags // an array of strings,
         });
-        // what is blog.id
+        // what is blog.id ?  it will be the id of the blogs
         return res.status(201).json({
             id: blog.id
         });
@@ -99,11 +99,22 @@ router.get('/bulk', middleware_1.authMiddleware, (req, res) => __awaiter(void 0,
     // @ts-ignore
     const userID = req.userId;
     try {
+        // 1. Get pagination parameters from query string with defaults.
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        // 2. Calculate the number of documents to skip.
+        const skip = (page - 1) * limit;
+        // 3. Fetch the total count of all blogs.
+        const totalPosts = yield db_1.blogmodel.countDocuments();
+        // 4. Fetch the blogs for the current page.
         const blogs = yield db_1.blogmodel.find({})
-            .populate('author', 'name') // Use Mongoose populate for efficiency
-            .select('title content description publishedDate tags author'); // Select all necessary fields
+            .skip(skip) // Skip the documents that are on previous pages.
+            .limit(limit) // Limit the number of documents to the page size.
+            .populate('author', 'name')
+            .select('title content description publishedDate tags author');
         return res.json({
-            blogs
+            posts: blogs,
+            totalPosts: totalPosts
         });
     }
     catch (error) {
@@ -113,6 +124,28 @@ router.get('/bulk', middleware_1.authMiddleware, (req, res) => __awaiter(void 0,
         });
     }
 }));
+/*
+RESPONSE FOR THE BELOWE API
+{
+    "post": {
+        "_id": "6891ca279e9c9ac784cea3ca",
+        "title": "FOOTBALL UCL",
+        "content": "<p>so Real madrid are champions once again as they usually are!</p>",
+        "description": "REAL MADRID HALA MADRID",
+        "author": {
+            "_id": "6891aeecb59c03f3d9a27c54",
+            "name": "JOHN CENA"
+        },
+        "tags": [
+            "FOOTBALL",
+            "SPORTS"
+        ],
+        "publishedDate": "2025-08-05T09:08:55.815Z",
+        "__v": 0
+    }
+}
+
+*/
 router.get('/get/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const id = req.params.id;
     try {
@@ -129,6 +162,39 @@ router.get('/get/:id', (req, res) => __awaiter(void 0, void 0, void 0, function*
     catch (error) {
         return res.status(500).json({
             msg: "Error fetching the post"
+        });
+    }
+}));
+// Fetch all blogs of a specific author
+/*
+RESPONSE
+
+*/
+router.get('/user/:authorId', middleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    // Extract the authorId from the URL parameters
+    const authorId = req.params.authorId;
+    try {
+        // Find all blog posts where the 'author' field matches the authorId.
+        // The .populate() method is crucial here; it replaces the author's
+        // ID with the actual user object, so we can access their name.
+        const posts = yield db_1.blogmodel.find({ author: authorId })
+            .populate('author', 'name');
+        if (!posts || posts.length === 0) {
+            // If no posts are found, return a 404 Not Found error
+            return res.status(404).json({
+                message: "No blogs found for this author."
+            });
+        }
+        // Return the list of posts as a JSON response
+        return res.status(200).json({
+            posts: posts
+        });
+    }
+    catch (error) {
+        console.error("Error fetching user blogs:", error);
+        // Return a 500 Internal Server Error for any database or server issues
+        return res.status(500).json({
+            message: "Error fetching the author's blogs."
         });
     }
 }));

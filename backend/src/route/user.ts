@@ -56,7 +56,7 @@ router.post("/signup", async (req : Request,res: Response) => {
     console.log('User saved to DB:', newuser);
     const token = jwt.sign({ id: newuser._id },
        process.env.JWT_SECRET as string, 
-       { expiresIn: '1h' });
+       ); // don't write expiresIn: '1h' there will be errors
 
                
        return res.status(200).json({
@@ -111,8 +111,7 @@ router.post("/signin", async (req:Request,res:Response) => {
             
             const token = jwt.sign(
                 { id: user._id }, 
-                process.env.JWT_SECRET as string, 
-                { expiresIn: '1h' }
+                process.env.JWT_SECRET as string,
             );
 
             // 200 OK for successful login

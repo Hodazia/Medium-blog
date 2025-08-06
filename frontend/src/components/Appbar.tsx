@@ -1,11 +1,14 @@
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Avatar } from "./BlogCard";
 import { X, Menu } from 'lucide-react';
+import { jwtDecode } from "jwt-decode"; // Import jwt-decode
+
 
 export const Appbar = () => {
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -15,6 +18,7 @@ export const Appbar = () => {
     localStorage.removeItem("token");
     navigate('/signin');
     setIsMenuOpen(false); // Close the menu after logging out
+    // add a toast notification too
   };
 
   const handleNewPostClick = () => {
@@ -23,10 +27,33 @@ export const Appbar = () => {
   };
 
   const handleProfileClick = () => {
-    navigate("/profile"); // Assuming a profile route exists
+    if (currentUserId) {
+      navigate(`/profile/${currentUserId}`); // Navigate to the profile page with user ID
+    } else {
+      //toast.error("User ID not available. Please sign in.");
+      navigate('/signin');
+    }
     setIsMenuOpen(false); // Close the menu after clicking
+  
   };
 
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const decodedToken: { id: string } = jwtDecode(token);
+        setCurrentUserId(decodedToken.id);
+      } catch (error) {
+        console.error("Error decoding token:", error);
+        localStorage.removeItem('token'); // Clear invalid token
+        navigate('/signin'); // Redirect to signin
+      }
+    } else {
+      // If no token, ensure user is redirected if on a protected route
+      // This is often handled by a PrivateRoute wrapper, but good to have here too.
+      // navigate('/signin'); // Uncomment if Appbar should always force signin if no token
+    }
+  }, [navigate]);
   return (
     <div className="border-b flex justify-between items-center px-6 py-4 md:px-10">
       {/* Left side: Logo */}

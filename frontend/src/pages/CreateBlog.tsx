@@ -41,7 +41,7 @@ export const BlogEditor = () => {
     };
 
     const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter' && currentTag.trim() !== '' && tags.length < 3) {
+        if (e.key === 'Enter' && currentTag.trim() !== '' && tags.length < 5) {
             setTags([...tags, currentTag.trim()]);
             setCurrentTag('');
             e.preventDefault(); 

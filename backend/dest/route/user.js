@@ -51,7 +51,7 @@ router.post("/signup", (req, res) => __awaiter(void 0, void 0, void 0, function*
             password: hashedPassword,
         });
         console.log('User saved to DB:', newuser);
-        const token = jsonwebtoken_1.default.sign({ id: newuser._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const token = jsonwebtoken_1.default.sign({ id: newuser._id }, process.env.JWT_SECRET); // don't write expiresIn: '1h' there will be errors
         return res.status(200).json({
             message: "User registered successfully.",
             token: token
@@ -90,7 +90,7 @@ router.post("/signin", (req, res) => __awaiter(void 0, void 0, void 0, function*
         }
         const isPasswordMatched = yield bcryptjs_1.default.compare(password, user.password);
         if (isPasswordMatched) {
-            const token = jsonwebtoken_1.default.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+            const token = jsonwebtoken_1.default.sign({ id: user._id }, process.env.JWT_SECRET);
             // 200 OK for successful login
             return res.status(200).json({
                 message: "Logged in successfully.",
